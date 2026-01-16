@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from collections import Counter
 from dataclasses import dataclass, field
 from typing import Iterable, List, Optional, Sequence, Tuple
 
@@ -37,20 +38,33 @@ class RerunLogger:
 
     def _setup_blueprint(self) -> None:
         blueprint = rrb.Blueprint(
-            rrb.Horizontal(
-                rrb.MapView(
-                    origin=self.config.map_origin,
-                    name="Kingston Map",
-                    zoom=self.config.map_zoom,
-                    background=self.config.map_provider,
+            rrb.Vertical(
+                rrb.Horizontal(
+                    rrb.MapView(
+                        origin=self.config.map_origin,
+                        name="Kingston Map",
+                        zoom=self.config.map_zoom,
+                        background=self.config.map_provider,
+                    ),
+                    rrb.Spatial2DView(origin="camera", name="Camera"),
+                    column_shares=[0.45, 0.55],
                 ),
-                rrb.Spatial2DView(origin="camera", name="Camera"),
-                column_shares=[0.45, 0.55],
+                rrb.TimeSeriesView(origin="metrics/detections", name="Detections Timeline"),
+                row_shares=[0.75, 0.25],
             ),
             rrb.SelectionPanel(expanded=True),
+            rrb.TimePanel(expanded=True),
             collapse_panels=False,
         )
         rr.send_blueprint(blueprint)
+
+    def _color_for_label(self, label: str) -> List[int]:
+        key = label.lower()
+        if "pothole" in key:
+            return [220, 50, 50]
+        if "crack" in key:
+            return [150, 200, 255]
+        return [180, 180, 180]
 
     def log_frame(self, frame_bgr: np.ndarray) -> None:
         frame_rgb = frame_bgr[:, :, ::-1]
@@ -58,16 +72,22 @@ class RerunLogger:
 
     def log_detections(self, detections: Iterable[Detection]) -> None:
         dets = list(detections)
+        labels = [det.category or det.label for det in dets]
+        label_counts = Counter(labels)
+        rr.log("metrics/detections/total", rr.Scalars([len(dets)]))
+        for label, count in label_counts.items():
+            rr.log(f"metrics/detections/by_label/{label}", rr.Scalars([count]))
         if not dets:
             return
         boxes = [det.bbox for det in dets]
-        labels = [det.category or det.label for det in dets]
+        colors = [self._color_for_label(label) for label in labels]
         rr.log(
             "camera/detections",
             rr.Boxes2D(
                 array=boxes,
                 array_format=rr.Box2DFormat.XYXY,
                 labels=labels,
+                colors=colors,
                 class_ids=None,
             ),
         )
@@ -106,6 +126,9 @@ class RerunLogger:
     ) -> None:
         height, width = frame_bgr.shape[:2]
         for det in detections:
+            label = det.category or det.label
+            color = self._color_for_label(label)
+            radius = (2.5 if "pothole" in label.lower() else 1.2) + 1.6 * det.score
             xmin, ymin, xmax, ymax = det.bbox
             x0 = max(0, min(width, int(xmin)))
             x1 = max(0, min(width, int(xmax)))
@@ -126,8 +149,8 @@ class RerunLogger:
                 entity,
                 rr.GeoPoints(
                     lat_lon=[[lat, lon]],
-                    radii=rr.Radius.ui_points(1.5 + 2.0 * det.score),
-                    colors=[[min(255, int(80 + 175 * det.score)), 40, 40]],
+                    radii=rr.Radius.ui_points(radius),
+                    colors=[color],
                 ),
             )
             rr.log(entity, rr.TextLog(f"{det.label} ({det.score:.2f})"))
