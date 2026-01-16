@@ -73,8 +73,7 @@ async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = Fil
         "db_path": str(db_path)
     }
     
-    # background_tasks.add_task(run_pipeline, job_id, str(video_path), str(db_path))
-    jobs[job_id]["status"] = "processing" # Force status to processing for UI feedback
+    background_tasks.add_task(run_pipeline, job_id, str(video_path), str(db_path))
     
     return {"job_id": job_id}
 
