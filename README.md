@@ -33,6 +33,8 @@ map with a time-synced camera feed and detection timeline.
 
 ### Architecture Overview
 
+![Architecture Overview](image.1.png)
+
 **Core data flow**
 
 1. **Video source** -> `vision/main.py`
