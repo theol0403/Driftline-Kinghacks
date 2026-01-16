@@ -2,14 +2,6 @@
 
 Robotic vision pipeline for Kingston public-works insights. The system ingests vehicle video, detects roadway issues (RDD2022), aligns detections to GPS, and visualizes results in Rerun with a map, camera feed, and detection timeline.
 
-### Project Layout
-
-- `vision/` - core CV pipeline (detection, mapping, visualization)
-- `webapp/` - FastAPI backend + static dashboard UI
-- `webapp/static/` - HTML/CSS/JS dashboard
-- `vision/demo_assets/` - demo videos, GPS CSVs, and rerun recordings
-- `ARCHITECTURE.md` - deeper architecture notes + diagram
-
 ### Architecture Overview
 
 **Core data flow**
@@ -20,13 +12,6 @@ Robotic vision pipeline for Kingston public-works insights. The system ingests v
 4. **GPS alignment** -> `vision/gps.py` (CSV time -> lat/lon)
 5. **Mapping & metrics** -> `vision/mapping.py`
 6. **Visualization** -> `vision/rerun_viz.py` (Rerun map, camera, timeline)
-
-**Webapp flow**
-
-1. Upload video -> `webapp/app.py` (FastAPI)
-2. Background job triggers pipeline command
-3. Status/results served via `/status/{job_id}` and `/results/{job_id}`
-4. Dashboard UI in `webapp/static/`
 
 **Rerun layout**
 
@@ -73,11 +58,6 @@ Robotic vision pipeline for Kingston public-works insights. The system ingests v
   - Metadata: label, score, cropped image
 - Detection timeline via `Scalars` under `metrics/detections/...`.
 
-**`webapp/app.py`**
-- FastAPI server for uploads, job status, and recent detection results.
-- Serves the dashboard UI from `webapp/static/`.
-- Runs the processing pipeline in a background task.
-
 ### Data Model
 
 **Detections (`Detection`)**
@@ -103,11 +83,15 @@ Robotic vision pipeline for Kingston public-works insights. The system ingests v
 
 ### Key Files
 
-- `webapp/app.py` - FastAPI server + static dashboard
-- `webapp/static/` - dashboard UI assets
 - `vision/main.py` - pipeline entry point
 - `vision/detector.py` - detection + label mapping
 - `vision/gps.py` - CSV GPS alignment
 - `vision/rerun_viz.py` - visualization + Rerun blueprint
 - `vision/mapping.py` - local mapping grid
 - `vision/vo.py` - visual odometry
+
+### Slides
+
+If the embed does not render in GitHub, use the direct link: [KingHacks 2026.pdf](KingHacks%202026.pdf)
+
+<embed src="KingHacks%202026.pdf" type="application/pdf" width="100%" height="700px" />
