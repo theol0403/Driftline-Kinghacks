@@ -12,7 +12,12 @@ RDD2022_POTHOLE_LABELS = {"D00", "D10", "D20", "D40"}
 
 
 def default_label_map() -> Dict[str, str]:
-    return {label: "potholes" for label in RDD2022_POTHOLE_LABELS}
+    return {
+        "D00": "longitudinal_crack",
+        "D10": "transverse_crack",
+        "D20": "alligator_crack",
+        "D40": "pothole",
+    }
 
 
 def map_label(label: str, label_map: Dict[str, str]) -> str:

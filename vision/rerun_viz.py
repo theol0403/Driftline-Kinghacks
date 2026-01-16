@@ -4,6 +4,7 @@ import math
 from dataclasses import dataclass, field
 from typing import Iterable, List, Optional, Sequence, Tuple
 
+import cv2
 import numpy as np
 import rerun as rr
 import rerun.blueprint as rrb
@@ -26,6 +27,7 @@ class RerunLogger:
     config: RerunConfig
     trajectory: List[Tuple[float, float]] = field(default_factory=list)
     geo_path: List[Tuple[float, float]] = field(default_factory=list)
+    detection_index: int = 0
 
     def __post_init__(self) -> None:
         rr.init(self.config.app_id, spawn=self.config.spawn)
@@ -42,13 +44,11 @@ class RerunLogger:
                     zoom=self.config.map_zoom,
                     background=self.config.map_provider,
                 ),
-                rrb.Vertical(
-                    rrb.Spatial2DView(origin="camera", name="Camera"),
-                    rrb.Spatial2DView(origin="camera/detections", name="Detections"),
-                ),
+                rrb.Spatial2DView(origin="camera", name="Camera"),
                 column_shares=[0.45, 0.55],
             ),
-            collapse_panels=True,
+            rrb.SelectionPanel(expanded=True),
+            collapse_panels=False,
         )
         rr.send_blueprint(blueprint)
 
@@ -96,6 +96,42 @@ class RerunLogger:
                 f"{self.config.map_origin}/path",
                 rr.GeoLineStrings(lat_lon=[self.geo_path]),
             )
+
+    def log_gps_detections(
+        self,
+        lat: float,
+        lon: float,
+        detections: Iterable[Detection],
+        frame_bgr: np.ndarray,
+    ) -> None:
+        height, width = frame_bgr.shape[:2]
+        for det in detections:
+            xmin, ymin, xmax, ymax = det.bbox
+            x0 = max(0, min(width, int(xmin)))
+            x1 = max(0, min(width, int(xmax)))
+            y0 = max(0, min(height, int(ymin)))
+            y1 = max(0, min(height, int(ymax)))
+            if x1 <= x0 or y1 <= y0:
+                continue
+            crop_bgr = frame_bgr[y0:y1, x0:x1]
+            if max(crop_bgr.shape[:2]) > 192:
+                scale = 192.0 / max(crop_bgr.shape[:2])
+                new_w = max(1, int(crop_bgr.shape[1] * scale))
+                new_h = max(1, int(crop_bgr.shape[0] * scale))
+                crop_bgr = cv2.resize(crop_bgr, (new_w, new_h))
+            crop_rgb = crop_bgr[:, :, ::-1]
+            entity = f"{self.config.map_origin}/detections/items/{self.detection_index:06d}"
+            self.detection_index += 1
+            rr.log(
+                entity,
+                rr.GeoPoints(
+                    lat_lon=[[lat, lon]],
+                    radii=rr.Radius.ui_points(1.5 + 2.0 * det.score),
+                    colors=[[min(255, int(80 + 175 * det.score)), 40, 40]],
+                ),
+            )
+            rr.log(entity, rr.TextLog(f"{det.label} ({det.score:.2f})"))
+            rr.log(entity, rr.Image(crop_rgb))
 
     def log_detection_points(self, points: Sequence[Tuple[float, float, str]]) -> None:
         if not points:

@@ -47,7 +47,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--model",
         type=str,
-        default="yolov8n.pt",
+        default=os.path.join(
+            os.path.dirname(__file__), "models", "yolo12s_RDD2022_best.pt"
+        ),
         help="Ultralytics model path or name.",
     )
     parser.add_argument(
@@ -207,6 +209,7 @@ def main() -> None:
             sample = gps_track.nearest(t_s)
             if sample is not None:
                 rerun_logger.log_gps(sample.lat, sample.lon)
+                rerun_logger.log_gps_detections(sample.lat, sample.lon, detections, frame)
         rerun_logger.log_detection_points(points)
         rerun_logger.log_grid(grid)
 
