@@ -53,3 +53,6 @@ map with a time-synced camera feed and detection timeline.
 - Right: camera feed with color-coded boxes
 - Bottom: detection timeline (counts over time)
 - Selection panel: click any detection point to see metadata + cropped image
+
+Related work:
+[ORDDC'2024 State of the art Solutions for Optimized Road Damage Detection](https://www.researchgate.net/publication/388092879_ORDDC'2024_State_of_the_art_Solutions_for_Optimized_Road_Damage_Detection)
