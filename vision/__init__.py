@@ -1,0 +1,1 @@
+"""Kingston vision system package."""

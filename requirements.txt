@@ -1,0 +1,4 @@
+numpy>=1.24
+opencv-python>=4.8
+rerun-sdk>=0.15
+ultralytics>=8.2

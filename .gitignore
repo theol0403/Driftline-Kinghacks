@@ -1,4 +1,6 @@
-demo_assets/*/raw_**
+demo_assets/**/raw_*
+raw_images
+demo_assets
 venv
 *.pyc
 .DS_Store
