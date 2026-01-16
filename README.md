@@ -4,7 +4,8 @@ Driftline is Kingston's mobile data collection tool for public-works
 intelligence. It crowdsources community-submitted dashcam footage through a
 webapp and turns it into a living map of hazards and maintenance needs, so the
 city can prioritize repairs faster and more fairly.
-[KingHacks 2026.pdf](KingHacks%202026.pdf)
+
+SLIDES AVAILABLE HERE: [KingHacks 2026.pdf](KingHacks%202026.pdf)
 
 ### Problem
 
