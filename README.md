@@ -7,7 +7,7 @@ intelligence. It crowdsources community-submitted dashcam footage through a
 webapp and turns it into a living map of hazards and maintenance needs, so the
 city can prioritize repairs faster and more fairly.
 
-SLIDES AVAILABLE HERE: [KingHacks 2026.pdf](KingHacks%202026.pdf) |
+HACKATHON SLIDES AVAILABLE HERE: [KingHacks 2026.pdf](KingHacks%202026.pdf) |
 [Download link](https://raw.githubusercontent.com/theol0403/Driftline-Kinghacks/main/KingHacks%202026.pdf)
 
 ### Problem
