@@ -22,7 +22,7 @@ Crowdsource community dashcam uploads through a webapp. Driftline processes each
 submission, detects hazards, aligns them to GPS, and visualizes the results on a
 map with a time-synced camera feed and detection timeline.
 
-![Dashboard Demo](driftline_dashboard_mockup.png)
+<img src="driftline_dashboard_mockup.png" alt="Dashboard Demo" width="50%">
 
 ### What We Detect
 
