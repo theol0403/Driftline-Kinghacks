@@ -1,4 +1,6 @@
-## Driftline Kingston Vision
+## Driftline Kingston
+
+![Driftline Logo](driftline.png)
 
 Driftline is Kingston's mobile data collection tool for public-works
 intelligence. It crowdsources community-submitted dashcam footage through a
