@@ -1,0 +1,5 @@
+data/*/raw_**
+venv
+*.pyc
+.DS_Store
+gsv_cache
