@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driftline - Civic Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-container">
+                <img src="assets/logo.png" alt="Driftline Logo" class="logo">
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active"><i class="fas fa-th-large"></i> Dashboard</a>
+                <a href="#" class="nav-item"><i class="fas fa-upload"></i> My Uploads</a>
+                <a href="#" class="nav-item"><i class="fas fa-dollar-sign"></i> Rebates</a>
+                <a href="#" class="nav-item"><i class="fas fa-map-marked-alt"></i> Map View</a>
+                <a href="#" class="nav-item"><i class="fas fa-cog"></i> Settings</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <h1>Welcome back, Kingstonian!</h1>
+                <div class="user-profile">
+                    <div class="avatar">T</div>
+                    <span>Theo L.</span>
+                </div>
+            </header>
+
+            <!-- Stats Overview -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class="fas fa-wallet"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">Total Rebates</span>
+                        <h2 class="stat-value">$12.50</h2>
+                        <span class="stat-trend positive">+ $2.50 this week</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon yellow"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">Hazards Found</span>
+                        <h2 class="stat-value" id="hazards-count">8</h2>
+                        <span class="stat-trend">Verified by AI</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="fas fa-video"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">Videos Processed</span>
+                        <h2 class="stat-value">4</h2>
+                        <span class="stat-trend">1 currently active</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <div class="section-card">
+                    <h3>Upload Dashcam Footage</h3>
+                    <p>Contribute to city maintenance and earn rebates.</p>
+                    <div class="upload-dropzone" id="dropzone">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag and drop files here or <span class="browse-link">Browse files</span></p>
+                        <input type="file" id="fileInput" hidden accept="video/*">
+                    </div>
+                    <div id="processing-status" class="status-indicator hidden">
+                        <div class="spinner"></div>
+                        <p>AI is analyzing your footage... <span id="detection-counter">0</span> detections found.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recent Activity & Map -->
+            <div class="bottom-grid">
+                <section class="activity-section">
+                    <div class="section-card">
+                        <h3>Recent Activity</h3>
+                        <table class="activity-table">
+                            <thead>
+                                <tr>
+                                    <th>Video Name</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Detected Items</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activity-body">
+                                <tr>
+                                    <td>Downtown_Commute_01.mp4</td>
+                                    <td>Oct 26, 2023</td>
+                                    <td><span class="status verified">Verified</span></td>
+                                    <td>Pothole, Blocked Sidewalk</td>
+                                </tr>
+                                <tr>
+                                    <td>Suburb_Route_02.mp4</td>
+                                    <td>Oct 25, 2023</td>
+                                    <td><span class="status processing">Processing</span></td>
+                                    <td>Pothole</td>
+                                </tr>
+                                <tr>
+                                    <td>Highway_Clip_03.mp4</td>
+                                    <td>Oct 24, 2023</td>
+                                    <td><span class="status verified">Verified</span></td>
+                                    <td>Road Debris</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="map-section">
+                    <div class="section-card">
+                        <h3>Map View</h3>
+                        <div class="map-placeholder">
+                            <!-- Real map would go here, using a placeholder for now -->
+                            <img src="https://via.placeholder.com/400x300.png?text=Kingston+Road+Impact+Map" alt="City Map">
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
