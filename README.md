@@ -1,6 +1,6 @@
 ## Driftline Kingston
 
-![Driftline Logo](driftline.png)
+![Driftline Logo](driftline.png) Theo Lemay | Claire Hu
 
 Driftline is Kingston's mobile data collection tool for public-works
 intelligence. It crowdsources community-submitted dashcam footage through a
@@ -22,6 +22,7 @@ Crowdsource community dashcam uploads through a webapp. Driftline processes each
 submission, detects hazards, aligns them to GPS, and visualizes the results on a
 map with a time-synced camera feed and detection timeline.
 
+<!-- markdownlint-disable-next-line MD033 -->
 <img src="driftline_dashboard_mockup.png" alt="Dashboard Demo" width="50%">
 
 ### What We Detect
