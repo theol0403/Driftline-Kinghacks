@@ -10,7 +10,7 @@ import numpy as np
 import rerun as rr
 import rerun.blueprint as rrb
 
-from .types import Detection, Pose2D
+from .types import Detection, Pose2D, ProjectedDetection
 
 
 @dataclass
@@ -155,6 +155,26 @@ class RerunLogger:
             )
             rr.log(entity, rr.TextLog(f"{det.label} ({det.score:.2f})"))
             rr.log(entity, rr.Image(crop_rgb))
+
+    def log_projected_hazards(
+        self,
+        detections: Iterable[ProjectedDetection],
+    ) -> None:
+        for detection in detections:
+            label = detection.category or detection.label
+            color = self._color_for_label(label)
+            radius = (2.5 if "pothole" in label.lower() else 1.2) + 1.6 * detection.score
+            entity = f"{self.config.map_origin}/detections/items/{self.detection_index:06d}"
+            self.detection_index += 1
+            rr.log(
+                entity,
+                rr.GeoPoints(
+                    lat_lon=[[detection.hazard_lat, detection.hazard_lon]],
+                    radii=rr.Radius.ui_points(radius),
+                    colors=[color],
+                ),
+            )
+            rr.log(entity, rr.TextLog(f"{detection.label} ({detection.score:.2f})"))
 
     def log_detection_points(self, points: Sequence[Tuple[float, float, str]]) -> None:
         if not points:

@@ -5,3 +5,5 @@ venv
 *.pyc
 .DS_Store
 gsv_cache
+**/data/
+uploads/

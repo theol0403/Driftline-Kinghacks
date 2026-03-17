@@ -1,26 +1,11 @@
 from __future__ import annotations
 
 import argparse
-import json
 import os
-from typing import Dict, Iterable, Optional
+import uuid
 
-import cv2
-import rerun as rr
-
-from .detector import DetectorConfig, UltralyticsDetector, filter_by_category
-from .gps import GpsTrack, load_gps_csv
-from .mapping import MappingConfig, OccupancyGridMapper
-from .rerun_viz import RerunConfig, RerunLogger
-from .types import Pose2D
-from .vo import VisualOdometry, VisualOdometryConfig
-
-
-def load_label_map(path: Optional[str]) -> Optional[Dict[str, str]]:
-    if not path:
-        return None
-    with open(path, "r", encoding="utf-8") as handle:
-        return json.load(handle)
+from .pipeline import PipelineConfig, run_pipeline
+from .storage import DriftlineRepository
 
 
 def parse_args() -> argparse.Namespace:
@@ -75,7 +60,7 @@ def parse_args() -> argparse.Namespace:
         type=str,
         nargs="*",
         default=None,
-        help="Filter detections to these categories (e.g. potholes).",
+        help="Filter detections to these categories (e.g. pothole).",
     )
     parser.add_argument(
         "--no-vo",
@@ -113,6 +98,11 @@ def parse_args() -> argparse.Namespace:
         help="Optional path to save a Rerun recording (.rrd).",
     )
     parser.add_argument(
+        "--no-rerun",
+        action="store_true",
+        help="Disable the live Rerun viewer.",
+    )
+    parser.add_argument(
         "--gps-csv",
         type=str,
         default=os.path.join(
@@ -123,13 +113,19 @@ def parse_args() -> argparse.Namespace:
         ),
         help="CSV with time_s,lat,lon,speed_mps,heading_deg for map logging.",
     )
+    parser.add_argument(
+        "--database-path",
+        type=str,
+        default=os.path.join("runs", "cli.sqlite"),
+        help="SQLite path for persisted detections and hazard clusters.",
+    )
+    parser.add_argument(
+        "--job-id",
+        type=str,
+        default=None,
+        help="Optional explicit job identifier.",
+    )
     return parser.parse_args()
-
-
-def open_capture(source: str) -> cv2.VideoCapture:
-    if source.isdigit():
-        return cv2.VideoCapture(int(source))
-    return cv2.VideoCapture(source)
 
 
 def main() -> None:
@@ -143,77 +139,39 @@ def main() -> None:
     else:
         source = args.source
 
-    label_map = load_label_map(args.label_map)
-    detector = UltralyticsDetector(
-        DetectorConfig(
-            model_path=args.model,
+    if not args.gps_csv:
+        raise ValueError("--gps-csv is required")
+
+    job_id = args.job_id or str(uuid.uuid4())
+    repository = DriftlineRepository(args.database_path)
+    repository.initialize()
+    repository.create_job(
+        job_id=job_id,
+        video_filename=os.path.basename(source),
+        gps_filename=os.path.basename(args.gps_csv),
+    )
+
+    run_pipeline(
+        PipelineConfig(
+            source=source,
+            gps_csv=args.gps_csv,
+            database_path=args.database_path,
+            job_id=job_id,
+            model=args.model,
+            artifacts_dir=os.path.join("runs", "artifacts"),
             conf=args.conf,
             imgsz=args.imgsz,
-            label_map=label_map,
+            categories=args.categories,
+            no_vo=args.no_vo,
+            vo_scale=args.vo_scale,
+            map_width=args.map_width,
+            map_height=args.map_height,
+            map_resolution=args.map_resolution,
+            label_map_path=args.label_map,
+            rerun_recording=args.rr_recording,
+            enable_rerun=not args.no_rerun,
         )
     )
-
-    mapper = OccupancyGridMapper(
-        MappingConfig(
-            width_m=args.map_width,
-            height_m=args.map_height,
-            resolution_m=args.map_resolution,
-        )
-    )
-
-    vo = None
-    pose = Pose2D(0.0, 0.0, 0.0)
-    if not args.no_vo:
-        vo = VisualOdometry(VisualOdometryConfig(scale_m_per_px=args.vo_scale))
-
-    rerun_logger = RerunLogger(RerunConfig(recording_path=args.rr_recording))
-
-    gps_track: Optional[GpsTrack] = None
-    if args.gps_csv:
-        if not os.path.exists(args.gps_csv):
-            raise FileNotFoundError(f"GPS CSV not found at {args.gps_csv}")
-        gps_track = load_gps_csv(args.gps_csv)
-
-    cap = open_capture(source)
-    if not cap.isOpened():
-        raise RuntimeError(f"Failed to open video source: {source}")
-
-    fps = cap.get(cv2.CAP_PROP_FPS) or 0.0
-    frame_index = 0
-    while True:
-        success, frame = cap.read()
-        if not success:
-            break
-        frame_index += 1
-
-        t_s = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000.0
-        if t_s <= 0.0 and fps > 0.0:
-            t_s = frame_index / fps
-        rr.set_time("time", duration=t_s)
-
-        detections = detector.detect(frame)
-        detections = filter_by_category(detections, args.categories)
-
-        if vo is not None:
-            pose_update = vo.update(frame)
-            if pose_update is not None:
-                pose = pose_update
-
-        points = mapper.update(pose, detections, frame.shape)
-        grid = mapper.grid_image()
-
-        rerun_logger.log_frame(frame)
-        rerun_logger.log_detections(detections)
-        rerun_logger.log_pose(pose)
-        if gps_track is not None:
-            sample = gps_track.nearest(t_s)
-            if sample is not None:
-                rerun_logger.log_gps(sample.lat, sample.lon)
-                rerun_logger.log_gps_detections(sample.lat, sample.lon, detections, frame)
-        rerun_logger.log_detection_points(points)
-        rerun_logger.log_grid(grid)
-
-    cap.release()
 
 
 if __name__ == "__main__":
